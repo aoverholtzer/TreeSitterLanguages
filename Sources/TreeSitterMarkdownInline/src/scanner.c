@@ -187,7 +187,7 @@ static bool parse_star(Scanner *s, TSLexer *lexer, const bool *valid_symbols) {
         // Information about the last token is in valid_symbols. See grammar.js
         // for these tokens for how this is done.
         if (valid_symbols[EMPHASIS_CLOSE_STAR] &&
-            !valid_symbols[LAST_TOKEN_WHITESPACE] &&
+           // !valid_symbols[LAST_TOKEN_WHITESPACE] &&
             (!valid_symbols[LAST_TOKEN_PUNCTUATION] ||
              next_symbol_punctuation || next_symbol_whitespace)) {
             // Closing delimiters take precedence
@@ -249,7 +249,7 @@ static bool parse_tilde(Scanner *s, TSLexer *lexer, const bool *valid_symbols) {
         // Information about the last token is in valid_symbols. See grammar.js
         // for these tokens for how this is done.
         if (valid_symbols[STRIKETHROUGH_CLOSE] &&
-            !valid_symbols[LAST_TOKEN_WHITESPACE] &&
+//            !valid_symbols[LAST_TOKEN_WHITESPACE] &&
             (!valid_symbols[LAST_TOKEN_PUNCTUATION] ||
              next_symbol_punctuation || next_symbol_whitespace)) {
             // Closing delimiters take precedence
@@ -279,6 +279,7 @@ static bool parse_underscore(Scanner *s, TSLexer *lexer,
         // should be open or close.
         if ((s->state & STATE_EMPHASIS_DELIMITER_IS_OPEN) &&
             valid_symbols[EMPHASIS_OPEN_UNDERSCORE]) {
+            s->state &= (~STATE_EMPHASIS_DELIMITER_IS_OPEN);
             lexer->result_symbol = EMPHASIS_OPEN_UNDERSCORE;
             s->num_emphasis_delimiters_left--;
             return true;
@@ -290,7 +291,7 @@ static bool parse_underscore(Scanner *s, TSLexer *lexer,
         }
     }
     lexer->mark_end(lexer);
-    // Otherwise count the number of stars
+    // Otherwise count the number of underscores
     uint8_t underscore_count = 1;
     while (lexer->lookahead == '_') {
         underscore_count++;
@@ -304,22 +305,38 @@ static bool parse_underscore(Scanner *s, TSLexer *lexer,
         bool next_symbol_whitespace =
             line_end || lexer->lookahead == ' ' || lexer->lookahead == '\t';
         bool next_symbol_punctuation = is_punctuation((char)lexer->lookahead);
-        bool right_flanking =
-            !valid_symbols[LAST_TOKEN_WHITESPACE] &&
+//        bool right_flanking =
+//            !valid_symbols[LAST_TOKEN_WHITESPACE] &&
+//            (!valid_symbols[LAST_TOKEN_PUNCTUATION] ||
+//             next_symbol_punctuation || next_symbol_whitespace);
+//        bool left_flanking =
+//            !next_symbol_whitespace && (!next_symbol_punctuation ||
+//                                        valid_symbols[LAST_TOKEN_PUNCTUATION] ||
+//                                        valid_symbols[LAST_TOKEN_WHITESPACE]);
+//        if (valid_symbols[EMPHASIS_CLOSE_UNDERSCORE] && right_flanking &&
+//            (!left_flanking || next_symbol_punctuation)) {
+//            s->state &= ~STATE_EMPHASIS_DELIMITER_IS_OPEN;
+//            lexer->result_symbol = EMPHASIS_CLOSE_UNDERSCORE;
+//            return true;
+//        }
+//        if (left_flanking &&
+//            (!right_flanking || valid_symbols[LAST_TOKEN_PUNCTUATION])) {
+//            s->state |= STATE_EMPHASIS_DELIMITER_IS_OPEN;
+//            lexer->result_symbol = EMPHASIS_OPEN_UNDERSCORE;
+//            return true;
+//        }
+        if (valid_symbols[EMPHASIS_CLOSE_UNDERSCORE] &&
+           // !valid_symbols[LAST_TOKEN_WHITESPACE] &&
             (!valid_symbols[LAST_TOKEN_PUNCTUATION] ||
-             next_symbol_punctuation || next_symbol_whitespace);
-        bool left_flanking =
-            !next_symbol_whitespace && (!next_symbol_punctuation ||
-                                        valid_symbols[LAST_TOKEN_PUNCTUATION] ||
-                                        valid_symbols[LAST_TOKEN_WHITESPACE]);
-        if (valid_symbols[EMPHASIS_CLOSE_UNDERSCORE] && right_flanking &&
-            (!left_flanking || next_symbol_punctuation)) {
+             next_symbol_punctuation || next_symbol_whitespace)) {
+            // Closing delimiters take precedence
             s->state &= ~STATE_EMPHASIS_DELIMITER_IS_OPEN;
             lexer->result_symbol = EMPHASIS_CLOSE_UNDERSCORE;
             return true;
         }
-        if (left_flanking &&
-            (!right_flanking || valid_symbols[LAST_TOKEN_PUNCTUATION])) {
+        if (!next_symbol_whitespace && (!next_symbol_punctuation ||
+                                        valid_symbols[LAST_TOKEN_PUNCTUATION] ||
+                                        valid_symbols[LAST_TOKEN_WHITESPACE])) {
             s->state |= STATE_EMPHASIS_DELIMITER_IS_OPEN;
             lexer->result_symbol = EMPHASIS_OPEN_UNDERSCORE;
             return true;
