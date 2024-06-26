@@ -13,6 +13,8 @@
 
 (strong_emphasis) @text.strong
 
+(strikethrough) @text.strikethrough
+
 [
   (link_destination)
   (uri_autolink)
