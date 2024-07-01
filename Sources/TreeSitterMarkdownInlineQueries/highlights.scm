@@ -35,5 +35,10 @@
 ; https://github.com/nvim-treesitter/nvim-treesitter/issues/2206
 ; TODO: Find better fix for this
 ; (image ["!" "[" "]" "("] @punctuation.delimiter)
-(inline_link ["[" "]" "(" ")"] @punctuation.delimiter)
+; (inline_link ["[" "]" "("] @punctuation.delimiter)
 ; (shortcut_link ["[" "]"] @punctuation.delimiter)
+
+
+(inline_link ["[" "]"] @punctuation.delimiter)
+(uri_autolink) @text.autolink
+(backslash_escape) @escape.backlash
